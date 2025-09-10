@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-mongoose.connect("mongodb+srv://mazhar518:mazhar518@atlascluster.gpt1hrj.mongodb.net/todoApp")
+mongoose.connect(process.env.DB_URL)
     .then(() => console.log('DB connected'))
     .catch(err => console.log(err))
 

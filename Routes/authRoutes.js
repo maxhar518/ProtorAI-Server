@@ -2,8 +2,8 @@ const bcrypt = require('bcrypt');
 const express = require('express');
 const jwt = require('jsonwebtoken')
 const router = express.Router();
+const sendEmail = require('../utils/sendEmail')
 const users = require('../Models/userModels')
-const JWT_SECRET = "mazhar518"
 
 router.post('/register', async (req, res) => {
     try {
@@ -12,7 +12,7 @@ router.post('/register', async (req, res) => {
         if (!username || !password)
             return res.status(400).json({ message: 'Username and password required' });
 
-        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+        const existingUser = await users.findOne({ email });
         if (existingUser) {
             return res.status(409).json({ message: 'Username or Email already exists' });
         }
@@ -49,11 +49,40 @@ router.post('/login', async (req, res) => {
         if (!valid)
             return res.status(401).json({ message: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user.id, role: user.roles }, JWT_SECRET)
+        const token = jwt.sign({ id: user.id, role: user.roles }, process.env.JWT_SECRET)
         res.status(200).json({ token: token, sucess: true, message: "Login Success" })
     } catch (error) {
         console.log(error);
         res.status(500).json(error)
+    }
+});
+
+router.post('/forgotPassword', async (req, res) => {
+    const { email } = req.body;
+
+    const user = await users.findOne({ email });
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN || "15m",
+    });
+
+    const resetLink = `http://localhost:3000/users/resetPassword/${token}`;
+
+    const mailOptions = {
+        from: `${process.env.EMAIL}`,
+        to: user.email,
+        subject: "Password Reset Link",
+        text: `Click here to reset your password: ${resetLink}`,
+    };
+
+
+    try {
+        await sendEmail(mailOptions);
+        res.status(200).json({ message: 'Password reset link sent to email' });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'line 78 Error sending email' });
     }
 });
 

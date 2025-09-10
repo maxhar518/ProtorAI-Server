@@ -4,7 +4,6 @@ const JWT_SECRET = "mazhar518";
 const verifyToken = async (req, res, next) => {
     try {
         const authHeader = req.headers?.authorization;
-        console.log(req.headers?.authorization);
 
         if (!authHeader || !authHeader.startsWith("Bearer ")) {
             return res.status(401).json({ message: "Authorization header missing or malformed" });
