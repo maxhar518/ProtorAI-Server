@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-
-
 ## 🔐 Role-Based Authentication and Authorization
 
 ---
@@ -72,4 +69,3 @@ In the system:
 =======
 # Role_Based_Auth
 Role-Based Authentication and Authorization (RBAC) is a security approach used in software systems to control access based on a user’s identity (authentication) and assigned role (authorization).
->>>>>>> 45c3b376e5af0abac267f42f9129633ea7906750
