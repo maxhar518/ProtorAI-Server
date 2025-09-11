@@ -5,18 +5,25 @@ const jwt = require('jsonwebtoken')
 const users = require('../Models/userModels')
 const verifyToken = require('../middleWares/authMiddleware')
 const authorizedRole = require('../middleWares/authorizedRole')
-
-router.get('/admin', verifyToken, authorizedRole("admin"), (req, res) => {
-    res.status(200).json({ message: "Welcome admin" })
-})
-
-router.get('/manager', verifyToken, authorizedRole("admin", "manager"), (req, res) => {
-    res.status(200).json({ message: "Welcome manager" })
-})
+const upload = require('../middleWares/imageMiddleware')
 
 router.get('/user', verifyToken, authorizedRole("admin", "manager", "user"), (req, res) => {
     res.status(200).json({ message: "Welcome user" })
 })
+
+
+router.post('/upload', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+
+    // Example: save file path in DB with user profile
+    // await User.findByIdAndUpdate(req.user.id, { profileImage: req.file.path });
+
+    res.json({ message: 'Image uploaded', file: req.file });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 router.post('/resetPassword/', verifyToken, async (req, res) => {
     const authHeader = req.headers?.authorization;

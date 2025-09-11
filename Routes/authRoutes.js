@@ -7,8 +7,9 @@ const users = require('../Models/userModels')
 
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password } = req.body;
-
+        const { username, email, password, roles } = req.body;
+        console.log(req.body);
+        
         if (!username || !password)
             return res.status(400).json({ message: 'Username and password required' });
 
@@ -23,8 +24,9 @@ router.post('/register', async (req, res) => {
             username: username,
             email,
             password: hashedPassword,
-            role: users.roles
+            roles: roles
         })
+
         await user.save()
 
         res.status(201).json({ sucess: true, message: 'User registered successfully', user });
