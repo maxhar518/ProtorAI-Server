@@ -12,7 +12,10 @@ router.post('/register', async (req, res) => {
         if (!username || !password)
             return res.status(400).json({ message: 'Username and password required' });
 
-        const existingUser = await users.findOne({ email });
+        const existingUser = await users.findOne({
+            $or: [{ email: email }, { username: username }]
+        });
+
         if (existingUser) {
             return res.status(409).json({ message: 'Username or Email already exists' });
         }
@@ -23,11 +26,11 @@ router.post('/register', async (req, res) => {
             username: username,
             email,
             password: hashedPassword,
-            role: users.roles
+            role: "user"
         })
         await user.save()
 
-        res.status(201).json({ sucess: true, message: 'User registered successfully', user });
+        res.status(201).json({ sucess: true, message: 'User registered successfully' });
 
     } catch (error) {
         console.log(error);
@@ -39,9 +42,9 @@ router.post('/login', async (req, res) => {
     try {
 
         const { username, password } = req.body;
-        const user = await users.findOne({ username: username });
+        const user = await users.findOne({ username });
 
-        if (!(user.username == username))
+        if (!user)
             return res.status(404).json({ message: 'Invalid credentials' });
 
         const valid = await bcrypt.compare(password, user.password);
@@ -76,6 +79,8 @@ router.post('/forgotPassword', async (req, res) => {
         text: `Click here to reset your password: ${resetLink}`,
     };
 
+    console.log({ resetLink })
+
 
     try {
         await sendEmail(mailOptions);
@@ -83,6 +88,39 @@ router.post('/forgotPassword', async (req, res) => {
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'line 78 Error sending email' });
+    }
+});
+
+router.post('/resetPassword', async (req, res) => {
+    const { password, confirmPassword, resetToken } = req.body;
+
+    try {
+        if (password !== confirmPassword) {
+            return res.status(400).json({ message: 'Passwords do not match' });
+        }
+        let decoded;
+        try {
+            decoded = jwt.verify(resetToken, process.env.JWT_SECRET);
+        } catch (error) {
+            if (err.name === "TokenExpiredError") {
+                return res.status(400).json({ message: "Reset token has expired" });
+            }
+            return res.status(400).json({ message: 'Invalid Reset token' });
+        }
+
+        const user = await users.findById(decoded.id)
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 5);
+        user.password = hashedPassword;
+        await user.save();
+        res.status(200).json({ message: 'Password reset successful' });
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'Error resetting password' });
     }
 });
 
