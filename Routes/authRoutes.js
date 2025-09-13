@@ -1,7 +1,7 @@
-const bcrypt = require('bcrypt');
 const express = require('express');
-const jwt = require('jsonwebtoken')
 const router = express.Router();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken')
 const sendEmail = require('../utils/sendEmail')
 const users = require('../Models/userModels')
 
@@ -64,7 +64,7 @@ router.post('/forgotPassword', async (req, res) => {
 
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
-
+    
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || "15m",
     });

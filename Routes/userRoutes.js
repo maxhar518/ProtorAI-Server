@@ -25,11 +25,11 @@ router.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-router.post('/resetPassword/', verifyToken, async (req, res) => {
+router.post('/resetPassword', verifyToken, async (req, res) => {
     const authHeader = req.headers?.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "Authorization header missing or malformed" });
+        return res.status(401).json({ message: "Login Required or header missing" });
     }
 
     const token = authHeader.split(" ")[1];
