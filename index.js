@@ -5,12 +5,14 @@ const authRoutes = require('./Routes/authRoutes')
 const userRoutes = require('./Routes/userRoutes')
 const examRoutes = require('./Routes/examRoues')
 const adminRoutes = require('./Routes/adminRoutes')
+const parserRoutes = require('./Routes/parserRoutes')
 app.use(express.json())
 
 app.use('/auth', authRoutes)
 app.use('/exam', examRoutes)
 app.use('/user', userRoutes)
 app.use('/admin', adminRoutes)
+app.use('/parser', parserRoutes)
 
 app.get('/', (req, res) => {
     res.send('API is running');
