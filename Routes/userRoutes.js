@@ -25,17 +25,16 @@ router.post('/upload', upload.single('image'), async (req, res) => {
   }
 });
 
-router.post('/resetPassword', verifyToken, async (req, res) => {
-    const authHeader = req.headers?.authorization;
-
+router.post('/resetPassword/:token', verifyToken, async (req, res) => {
+    const authHeader = req?.params.token ;
+    console.log(authHeader);
+    
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({ message: "Login Required or header missing" });
     }
 
     const token = authHeader.split(" ")[1];
     const { newPassword } = req.body;
-    console.log(token, newPassword);
-    console.log(process.env.JWT_SECRET);
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         const user = users.findOne(decoded.id);

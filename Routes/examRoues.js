@@ -17,7 +17,7 @@ router.get('/:id', async (req, res) => {
         }
         res.status(200).json(exam);
     } catch (err) {
-        res.status(500).json({ error: 'Server error' });
+        res.status(500).json(err);
     }
 });
 

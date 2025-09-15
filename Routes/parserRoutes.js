@@ -3,9 +3,11 @@ const multer = require("multer");
 const fs = require("fs");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
-
 const router = express.Router();
 const upload = multer({ dest: "uploads/" });
+const Question = require('../Models/Question')
+const verifyToken = require('../middleWares/authMiddleware')
+const authorizedRole = require('../middleWares/authorizedRole')
 
 const parseQuestions = (rawText) => {
     const questionBlocks = rawText.split(/(?=Q\d+)/g);
@@ -44,7 +46,7 @@ const parseQuestions = (rawText) => {
 
 
 
-router.post("/parseDocument", upload.single("file"), async (req, res) => {
+router.post("/parseDocument", upload.single("file"), verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: "No file uploaded" });
@@ -67,11 +69,19 @@ router.post("/parseDocument", upload.single("file"), async (req, res) => {
             return res.status(400).json({ message: "Unsupported file format" });
         }
 
-        const parsed = parseQuestions(rawText);
-        console.log({ parsed });
-        res.json(parsed);
+        const parsedQuestions = parseQuestions(rawText);
+
+        for (const parsed of parsedQuestions) {
+            const { question, options, answer, marks } = parsed;
+            const newQuestion = new Question({ question, options, answer, marks });
+            console.log(newQuestion);
+            await newQuestion.save();
+        }
+
+        res.json({ message: 'Questions saved successfully', count: parsedQuestions.length });
+
     } catch (error) {
-        res.status(500).json({ message: "Error parsing document", error: error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 

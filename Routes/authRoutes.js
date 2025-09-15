@@ -7,8 +7,7 @@ const users = require('../Models/userModels')
 
 router.post('/register', async (req, res) => {
     try {
-        const { username, email, password, roles } = req.body;
-        console.log(req.body);
+        const { username, email, password, role } = req.body;
         
         if (!username || !password)
             return res.status(400).json({ message: 'Username and password required' });
@@ -24,7 +23,7 @@ router.post('/register', async (req, res) => {
             username: username,
             email,
             password: hashedPassword,
-            roles: roles
+            role: role
         })
 
         await user.save()
@@ -51,8 +50,8 @@ router.post('/login', async (req, res) => {
         if (!valid)
             return res.status(401).json({ message: 'Invalid credentials' });
 
-        const token = jwt.sign({ id: user.id, role: user.roles }, process.env.JWT_SECRET)
-        res.status(200).json({ token: token, sucess: true, message: "Login Success" })
+        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET)
+        res.status(200).json({ token: token, message: "Login Success" })
     } catch (error) {
         console.log(error);
         res.status(500).json(error)
