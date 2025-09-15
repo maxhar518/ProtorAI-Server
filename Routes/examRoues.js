@@ -1,12 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const questions = require('../Models/Question');
+const Questions = require('../Models/Question');
 
 
 router.get('/', async (req, res) => {
     try {
-        const data = await questions.find()
+        const data = await Questions.find()
         res.status(200).json(data)
     } catch (error) {
         res.status(500).json(error)
@@ -19,7 +19,7 @@ router.get('/:id', async (req, res) => {
         return res.status(400).json({ error: 'Invalid exam ID' });
     }
     try {
-        const exam = await questions.findById(id);
+        const exam = await Questions.findById(id);
         if (!exam) {
             return res.status(404).json({ error: 'Exam not found' });
         }
@@ -36,21 +36,41 @@ router.delete('/:id', async (req, res) => {
         return res.status(400).json({ error: 'Invalid exam ID' });
     }
     try {
-        const exam = await questions.findByIdAndDelete(id);
+        const exam = await Questions.findByIdAndDelete(id);
         res.status(200).json({message:"Question Deleted"});
     } catch (err) {
         res.status(500).json(err);
     }
 });
 
-router.post('/questions', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
+router.post('/questions', async (req, res) => {
     try {
         const { question, options, answer, marks } = req.body;
-        const newQuestion = new Question({ question, options, answer, marks });
+        const newQuestion = new Questions({ question, options, answer, marks });
         await newQuestion.save();
         res.status(201).json({ message: "Question saved successfully", question: newQuestion });
     } catch (error) {
         res.status(500).json({ message: "Error saving question", error: error.message });
+    }
+});
+
+router.put('/:id', async (req, res) => {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+        return res.status(400).json({ error: 'Invalid exam ID' });
+    }
+    try {
+        const updatedQuestion = await Questions.findByIdAndUpdate(
+            id,
+            { $set: req.body },
+            { new: true, runValidators: true }
+        );
+        if (!updatedQuestion) {
+            return res.status(404).json({ error: 'Question not found' });
+        }
+        res.status(200).json({ message: "Question updated successfully", Question: updatedQuestion });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating question", error: error.message });
     }
 });
 
