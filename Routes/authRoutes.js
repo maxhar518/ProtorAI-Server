@@ -8,14 +8,21 @@ const users = require('../Models/userModels')
 router.post('/register', async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
-        
-        if (!username || !password)
-            return res.status(400).json({ message: 'Username and password required' });
+
+        const usernameRegex = /^\w+$/;
+        const emailRegex = /^[\w.-]+@[\w.-]+\.\w{2,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+
+        if (!usernameRegex.test(username)) return res.status(400).json({ message: "Invalid username format" });
+
+        if (!emailRegex.test(email)) return res.status(400).json({ message: "Invalid email format" });
+
+        if (!passwordRegex.test(password)) return res.status(400).json({ message: "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a number." });
+
+        if (!username || !password) return res.status(400).json({ message: 'Username and password required' });
 
         const existingUser = await users.findOne({ email });
-        if (existingUser) {
-            return res.status(409).json({ message: 'Username or Email already exists' });
-        }
+        if (existingUser) return res.status(409).json({ message: 'Username or Email already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 5);
 
@@ -30,10 +37,7 @@ router.post('/register', async (req, res) => {
 
         res.status(201).json({ sucess: true, message: 'User registered successfully', user });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json(error)
-    }
+    } catch (error) { res.status(500).json(error) }
 });
 
 router.post('/login', async (req, res) => {
@@ -42,13 +46,11 @@ router.post('/login', async (req, res) => {
         const { username, password } = req.body;
         const user = await users.findOne({ username: username });
 
-        if (!(user.username == username))
-            return res.status(404).json({ message: 'Invalid credentials' });
+        if (!(user.username == username)) return res.status(404).json({ message: 'Invalid credentials' });
 
         const valid = await bcrypt.compare(password, user.password);
 
-        if (!valid)
-            return res.status(401).json({ message: 'Invalid credentials' });
+        if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
         const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET)
         res.status(200).json({ token: token, message: "Login Success" })
@@ -63,7 +65,7 @@ router.post('/forgotPassword', async (req, res) => {
 
     const user = await users.findOne({ email });
     if (!user) return res.status(404).json({ message: 'User not found' });
-    
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRES_IN || "15m",
     });
@@ -83,7 +85,7 @@ router.post('/forgotPassword', async (req, res) => {
         res.status(200).json({ message: 'Password reset link sent to email' });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: 'line 78 Error sending email' });
+        res.status(500).json({ err, message: 'Error sending email' });
     }
 });
 

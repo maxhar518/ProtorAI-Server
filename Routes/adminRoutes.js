@@ -7,10 +7,10 @@ const Question = require('../Models/Question');
 router.get('/', verifyToken, authorizedRole("admin"), (req, res) => {
     res.status(200).json({ message: "Welcome admin" })
 })
-router.post('/questions', verifyToken, authorizedRole("admin"), async (req, res) => {
+router.post('/questions', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     try {
-        const { question, options, answer } = req.body;
-        const newQuestion = new Question({ question, options, answer });
+        const { question, options, answer, marks } = req.body;
+        const newQuestion = new Question({ question, options, answer, marks });
         await newQuestion.save();
         res.status(201).json({ message: "Question saved successfully", question: newQuestion });
     } catch (error) {
