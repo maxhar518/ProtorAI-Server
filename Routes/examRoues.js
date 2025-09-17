@@ -2,9 +2,11 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Questions = require('../Models/Question');
+const verifyToken = require('../middleWares/authMiddleware')
+const authorizedRole = require('../middleWares/authorizedRole')
 
 
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     try {
         const data = await Questions.find()
         res.status(200).json(data)
@@ -13,7 +15,7 @@ router.get('/', async (req, res) => {
     }
 })
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ error: 'Invalid exam ID' });
@@ -30,7 +32,7 @@ router.get('/:id', async (req, res) => {
 });
 
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id',verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ error: 'Invalid exam ID' });
@@ -43,7 +45,7 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
-router.post('/questions', async (req, res) => {
+router.post('/questions',verifyToken, authorizedRole("admin", "manager"),async (req, res) => {
     try {
         const { question, options, answer, marks } = req.body;
         const newQuestion = new Questions({ question, options, answer, marks });
@@ -54,7 +56,7 @@ router.post('/questions', async (req, res) => {
     }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ error: 'Invalid exam ID' });
