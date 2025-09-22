@@ -8,7 +8,7 @@ const authorizedRole = require('../middleWares/authorizedRole')
 const upload = require('../middleWares/imageMiddleware')
 
 router.get('/user', verifyToken, authorizedRole("admin", "manager", "user"), (req, res) => {
-    res.status(200).json({ message: "Welcome user" })
+  res.status(200).json({ message: "Welcome user" })
 })
 
 
@@ -26,29 +26,26 @@ router.post('/upload', upload.single('image'), async (req, res) => {
 });
 
 router.post('/resetPassword/:token', verifyToken, async (req, res) => {
-    const authHeader = req?.params.token ;
-    console.log(authHeader);
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({ message: "Login Required or header missing" });
-    }
+  const authHeader = req?.params.token;
 
-    const token = authHeader.split(" ")[1];
-    const { newPassword } = req.body;
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = users.findOne(decoded.id);
-        if (!user) return res.status(404).json({ message: 'User not found' });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Login Required or header missing" });
+  }
 
-        user.password = await bcrypt.hash(newPassword, 5);
+  const token = authHeader.split(" ")[1];
+  const { newPassword } = req.body;
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = users.findOne(decoded.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-        res.json({ message: 'Password has been reset successfully' });
-    } catch (error) {
-        console.log(error);
-        res.status(500).json(error)
+    user.password = await bcrypt.hash(newPassword, 5);
 
-    }
-
+    res.json({ message: 'Password has been reset successfully' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json(error)
+  }
 });
 
 module.exports = router
