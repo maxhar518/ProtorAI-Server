@@ -2,24 +2,60 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const users = require('../Models/userModels')
+const Users = require('../Models/userModels')
+const Profile = require('../Models/profile')
 const verifyToken = require('../middleWares/authMiddleware')
 const authorizedRole = require('../middleWares/authorizedRole')
 const upload = require('../middleWares/imageMiddleware')
 
-router.get('/user', verifyToken, authorizedRole("admin", "manager", "user"), (req, res) => {
-  res.status(200).json({ message: "Welcome user" })
+router.get('/', verifyToken, authorizedRole("admin", "manager", "user"), (req, res) => {
+  res.status(200).json({ message: "Welcome To ProTorAI" })
 })
 
-
-router.post('/upload', upload.single('image'), async (req, res) => {
+router.get('/profile/:id', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
   try {
-    if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+    const profileId = req.params.id;
 
-    // Example: save file path in DB with user profile
-    // await User.findByIdAndUpdate(req.user.id, { profileImage: req.file.path });
+    const response = await Profile.findById({ profileId });
 
-    res.json({ message: 'Image uploaded', file: req.file });
+    if (!response) {
+      return res.status(404).json({ message: 'Profile data not fetched' });
+    }
+    res.json({ message: 'Profile data fetched', response });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.post('/profile', async (req, res) => {
+  try {
+    const profileData = req?.body;
+    const newProfile = new Profile(profileData);
+    await newProfile.save();
+    return res.status(201).json({
+      message: 'Profile created successfully',
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.put('/profile/:id', async (req, res) => {
+  try {
+    const profileData = req?.body;
+    const { id } = req.params
+
+    const profile = await Profile.findById(id);
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    await Profile.findByIdAndUpdate(id, profileData, { new: true });
+
+    return res.status(200).json({
+      message: 'Profile Updated successfully',
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -36,7 +72,7 @@ router.post('/resetPassword/:token', verifyToken, async (req, res) => {
   const { newPassword } = req.body;
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = users.findOne(decoded.id);
+    const user = Users.findOne(decoded.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
     user.password = await bcrypt.hash(newPassword, 5);

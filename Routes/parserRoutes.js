@@ -68,7 +68,10 @@ router.post("/parseDocument", upload.single("file"), async (req, res) => {
             return res.status(400).json({ message: "Unsupported file format" });
         }
 
-        const parsedQuestions = parseQuestions(rawText);
+        const parsedText = parseQuestions(rawText);
+        console.log(parsedText);
+        
+        res.status(200).json({ message: 'Parsed successfully', count: parsedText.length, parsedText });
 
         // for (const parsed of parsedQuestions) {
         //     const { question, options, answer, marks } = parsed;
@@ -76,8 +79,6 @@ router.post("/parseDocument", upload.single("file"), async (req, res) => {
         //     console.log(newQuestion);
         //     await newQuestion.save();
         // }
-
-        res.status(200).json({ message: 'Parsed successfully', count: parsedQuestions.length });
 
     } catch (error) {
         res.status(500).json({ error: error.message });

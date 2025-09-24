@@ -2,11 +2,12 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const Questions = require('../Models/Question');
+// const captureAndAnalyze = require('../middleWares/DetectMiddleware')
 const verifyToken = require('../middleWares/authMiddleware')
 const authorizedRole = require('../middleWares/authorizedRole')
 
 
-router.get('/', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
+router.get('/', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
     try {
         const data = await Questions.find()
         res.status(200).json(data)
@@ -15,11 +16,8 @@ router.get('/', verifyToken, authorizedRole("admin", "manager"), async (req, res
     }
 })
 
-router.get('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
+router.get('/:id', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
     const { id } = req.params;
-    if (!mongoose.Types.ObjectId.isValid(id)) {
-        return res.status(400).json({ error: 'Invalid exam ID' });
-    }
     try {
         const exam = await Questions.findById(id);
         if (!exam) {
@@ -32,20 +30,20 @@ router.get('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, 
 });
 
 
-router.delete('/:id',verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
+router.delete('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     const { id } = req.params;
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return res.status(400).json({ error: 'Invalid exam ID' });
     }
     try {
         const exam = await Questions.findByIdAndDelete(id);
-        res.status(200).json({message:"Question Deleted"});
+        res.status(200).json({ message: "Question Deleted" });
     } catch (err) {
         res.status(500).json(err);
     }
 });
 
-router.post('/questions',verifyToken, authorizedRole("admin", "manager"),async (req, res) => {
+router.post('/questions', verifyToken, authorizedRole("admin", "manager"), async (req, res) => {
     try {
         const { question, options, answer, marks } = req.body;
         const newQuestion = new Questions({ question, options, answer, marks });

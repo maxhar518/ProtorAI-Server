@@ -3,24 +3,23 @@ const app = express()
 const db = require('./db')
 const authRoutes = require('./Routes/authRoutes')
 const userRoutes = require('./Routes/userRoutes')
-// const examRoutes = require('./Routes/examRoues')
+const examRoutes = require('./Routes/examRoues')
 const parserRoutes = require('./Routes/parserRoutes')
-// const imageMiddleware = require('./middleWares/imageMiddleware')
-// const captureAndAnalyze = require('./middleWares/DetectMiddleware')
-const cors = require('cors');
+// const cors = require('cors');
 
-const corsOptions = {
-    origin: 'http://localhost:8080', // Allow only frontend domain
-    methods: ['GET', 'POST'],       // Allow only specific HTTP methods
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow only certain headers
-};
+// const corsOptions = {
+//     origin: 'http://localhost:8080',
+//     methods: ['GET', 'POST'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+// };
 
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
+app.use(express.json());
 
 app.use('/auth', authRoutes)
 app.use('/user', userRoutes)
 app.use('/parser', parserRoutes)
-// app.use('/exam', captureAndAnalyze, examRoutes)
+app.use('/exam', examRoutes)
 
 app.get('/', (req, res) => {
     res.send('API is running');
