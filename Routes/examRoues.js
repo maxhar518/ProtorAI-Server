@@ -23,7 +23,7 @@ router.get('/:id', verifyToken, authorizedRole("admin", "manager", "user"), asyn
         if (!exam) {
             return res.status(404).json({ error: 'Exam not found' });
         }
-        res.status(200).json(exam);
+        res.status(200).json({ exam, success: true });
     } catch (err) {
         res.status(500).json(err);
     }
@@ -37,7 +37,7 @@ router.delete('/:id', verifyToken, authorizedRole("admin", "manager"), async (re
     }
     try {
         const exam = await Questions.findByIdAndDelete(id);
-        res.status(200).json({ message: "Question Deleted" });
+        res.status(200).json({ success: true, message: "Question Deleted" });
     } catch (err) {
         res.status(500).json(err);
     }
@@ -48,7 +48,7 @@ router.post('/questions', verifyToken, authorizedRole("admin", "manager"), async
         const { question, options, answer, marks } = req.body;
         const newQuestion = new Questions({ question, options, answer, marks });
         await newQuestion.save();
-        res.status(201).json({ message: "Question saved successfully", question: newQuestion });
+        res.status(201).json({ success: true, message: "Question saved successfully", question: newQuestion });
     } catch (error) {
         res.status(500).json({ message: "Error saving question", error: error.message });
     }
@@ -68,7 +68,7 @@ router.put('/:id', verifyToken, authorizedRole("admin", "manager"), async (req, 
         if (!updatedQuestion) {
             return res.status(404).json({ error: 'Question not found' });
         }
-        res.status(200).json({ message: "Question updated successfully", Question: updatedQuestion });
+        res.status(200).json({ success: true, message: "Question updated successfully", Question: updatedQuestion });
     } catch (error) {
         res.status(500).json({ message: "Error updating question", error: error.message });
     }

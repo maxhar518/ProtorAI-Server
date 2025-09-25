@@ -9,17 +9,10 @@ router.post('/register', async (req, res) => {
     try {
         const { username, email, password, role } = req.body;
 
-        const usernameRegex = /^\w+$/;
-        const emailRegex = /^[\w.-]+@[\w.-]+\.\w{2,}$/;
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,}$/;
+        if (!username || !email || !password) return res.status(400).json({ message: "Missing fields" });
 
-        if (!usernameRegex.test(username)) return res.status(400).json({ message: "Invalid username format" });
-
-        if (!emailRegex.test(email)) return res.status(400).json({ message: "Invalid email format" });
-
-        if (!passwordRegex.test(password)) return res.status(400).json({ message: "Password must be at least 8 characters long and include an uppercase letter, a lowercase letter, and a number." });
-
-        if (!username || !password) return res.status(400).json({ message: 'Username and password required' });
+        if (!/^\w+$/.test(username)) return res.status(400).json({ message: "Invalid username" });
+        if (!/^[\w.-]+@[\w.-]+\.\w{2,}$/.test(email)) return res.status(400).json({ message: "Invalid email" });
 
         const existingUser = await users.findOne({ email });
         if (existingUser) return res.status(409).json({ message: 'Username or Email already exists' });
@@ -35,7 +28,7 @@ router.post('/register', async (req, res) => {
 
         await user.save()
 
-        res.status(201).json({ sucess: true, message: 'User registered successfully', user });
+        res.status(201).json({ success: true, message: 'User registered successfully', user });
 
     } catch (error) { res.status(500).json(error) }
 });
@@ -43,17 +36,17 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
     try {
 
-        const { username, password } = req?.body;
-        const user = await users.findOne({ username: username });
+        const { email, password } = req?.body;
+        const user = await users.findOne({ email: email });
 
-        if (!(user.username == username)) return res.status(404).json({ message: 'Invalid credentials' });
+        if (user.email) {
+            const valid = await bcrypt.compare(password, user.password);
 
-        const valid = await bcrypt.compare(password, user.password);
+            if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
 
-        if (!valid) return res.status(401).json({ message: 'Invalid credentials' });
-
-        const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET)
-        res.status(200).json({ token: token, message: "Login Success" })
+            const token = jwt.sign({ id: user.id, role: user.role }, process.env.JWT_SECRET)
+            res.status(200).json({ token: token, message: "Login Success", success: true })
+        } else { return res.status(404).json({ message: 'Invalid credentials' }); }
     } catch (error) {
         console.log(error);
         res.status(500).json(error)
@@ -82,7 +75,7 @@ router.post('/forgotPassword', async (req, res) => {
 
     try {
         await sendEmail(mailOptions);
-        res.status(200).json({ message: 'Password reset link sent to email' });
+        res.status(200).json({ success: true, message: 'Password reset link sent to email' });
     } catch (err) {
         console.error(err);
         res.status(500).json({ err, message: 'Error sending email' });

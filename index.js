@@ -5,15 +5,15 @@ const authRoutes = require('./Routes/authRoutes')
 const userRoutes = require('./Routes/userRoutes')
 const examRoutes = require('./Routes/examRoues')
 const parserRoutes = require('./Routes/parserRoutes')
-// const cors = require('cors');
+const cors = require('cors');
 
-// const corsOptions = {
-//     origin: 'http://localhost:8080',
-//     methods: ['GET', 'POST'],
-//     allowedHeaders: ['Content-Type', 'Authorization'],
-// };
+const corsOptions = {
+    origin: 'http://localhost:8080',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use('/auth', authRoutes)

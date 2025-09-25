@@ -21,14 +21,14 @@ router.get('/profile/:id', verifyToken, authorizedRole("admin", "manager", "user
     if (!response) {
       return res.status(404).json({ message: 'Profile data not fetched' });
     }
-    res.json({ message: 'Profile data fetched', response });
+    res.json({ success: true, message: 'Profile data fetched', response });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
 
-router.post('/profile', async (req, res) => {
+router.post('/profile', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
   try {
     const profileData = req?.body;
     const newProfile = new Profile(profileData);
@@ -41,7 +41,7 @@ router.post('/profile', async (req, res) => {
   }
 });
 
-router.put('/profile/:id', async (req, res) => {
+router.put('/profile/:id', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
   try {
     const profileData = req?.body;
     const { id } = req.params
@@ -54,6 +54,7 @@ router.put('/profile/:id', async (req, res) => {
     await Profile.findByIdAndUpdate(id, profileData, { new: true });
 
     return res.status(200).json({
+      success: true,
       message: 'Profile Updated successfully',
     });
   } catch (err) {
@@ -77,7 +78,7 @@ router.post('/resetPassword/:token', verifyToken, async (req, res) => {
 
     user.password = await bcrypt.hash(newPassword, 5);
 
-    res.json({ message: 'Password has been reset successfully' });
+    res.json({ success: true, message: 'Password has been reset successfully' });
   } catch (error) {
     console.log(error);
     res.status(500).json(error)
