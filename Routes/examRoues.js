@@ -9,8 +9,8 @@ const authorizedRole = require('../middleWares/authorizedRole')
 
 router.get('/', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
     try {
-        const data = await Questions.find()
-        res.status(200).json(data)
+        const parsedText = await Questions.find()
+        res.status(200).json({ success: true, count: parsedText.length, parsedText });
     } catch (error) {
         res.status(500).json(error)
     }

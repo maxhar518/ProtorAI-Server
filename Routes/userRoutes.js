@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const Users = require('../Models/userModels')
 const Profile = require('../Models/profile')
 const verifyToken = require('../middleWares/authMiddleware')
 const authorizedRole = require('../middleWares/authorizedRole')
@@ -12,17 +11,17 @@ router.get('/', verifyToken, authorizedRole("admin", "manager", "user"), (req, r
   res.status(200).json({ message: "Welcome To ProTorAI" })
 })
 
-router.get('/profile/:id', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
+router.get('/profile', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
   try {
-    const profileId = req.params.id;
-
-    const response = await Profile.findById({ profileId });
-
+    const { id } = req?.user;
+    const response = await Profile.findOne({ _id: id });
     if (!response) {
-      return res.status(404).json({ message: 'Profile data not fetched' });
+      return res.status(404).json({ message: 'User Profile data not Found' });
     }
-    res.json({ success: true, message: 'Profile data fetched', response });
+
+    res.json({ success: true, message: 'User Profile data Found', response });
   } catch (err) {
+    console.log(err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -38,50 +37,6 @@ router.post('/profile', verifyToken, authorizedRole("admin", "manager", "user"),
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
-  }
-});
-
-router.put('/profile/:id', verifyToken, authorizedRole("admin", "manager", "user"), async (req, res) => {
-  try {
-    const profileData = req?.body;
-    const { id } = req.params
-
-    const profile = await Profile.findById(id);
-    if (!profile) {
-      return res.status(404).json({ message: 'Profile not found' });
-    }
-
-    await Profile.findByIdAndUpdate(id, profileData, { new: true });
-
-    return res.status(200).json({
-      success: true,
-      message: 'Profile Updated successfully',
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/resetPassword/:token', verifyToken, async (req, res) => {
-  const authHeader = req?.params.token;
-
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ message: "Login Required or header missing" });
-  }
-
-  const token = authHeader.split(" ")[1];
-  const { newPassword } = req.body;
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = Users.findOne(decoded.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    user.password = await bcrypt.hash(newPassword, 5);
-
-    res.json({ success: true, message: 'Password has been reset successfully' });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json(error)
   }
 });
 

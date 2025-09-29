@@ -7,7 +7,7 @@ const OAuth2 = google.auth.OAuth2;
 const oauth2Client = new OAuth2(
   process.env.CLIENT_ID,
   process.env.CLIENT_SECRET,
-  'https://developers.google.com/oauthplayground' // Redirect URL
+  'https://developers.google.com/oauthplayground'
 );
 
 oauth2Client.setCredentials({
@@ -28,13 +28,6 @@ async function sendEmail(mailOptions) {
         accessToken: accessToken.token,
       },
     });
-    
-    // const mailOptions = {
-      //   from: `Your Name <${process.env.EMAIL}>`,
-      //   to: "mazharalib518@gmail.com",
-      //   subject: "Testing",
-      //   text: "Hello Hello Mic testing",
-      // };
       console.log(mailOptions);
 
     const result = await transport.sendMail(mailOptions);

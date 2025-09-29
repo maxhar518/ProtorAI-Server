@@ -69,16 +69,14 @@ router.post("/parseDocument", upload.single("file"), async (req, res) => {
         }
 
         const parsedText = parseQuestions(rawText);
-        console.log(parsedText);
-
         res.status(200).json({ success: true, message: 'Parsed successfully', count: parsedText.length, parsedText });
 
-        // for (const parsed of parsedQuestions) {
-        //     const { question, options, answer, marks } = parsed;
-        //     const newQuestion = new Question({ question, options, answer, marks });
-        //     console.log(newQuestion);
-        //     await newQuestion.save();
-        // }
+        for (const parsed of parsedQuestions) {
+            const { question, options, answer, marks } = parsed;
+            const newQuestion = new Question({ question, options, answer, marks });
+            console.log(newQuestion);
+            await newQuestion.save();
+        }
 
     } catch (error) {
         res.status(500).json({ error: error.message });

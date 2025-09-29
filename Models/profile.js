@@ -3,48 +3,47 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const ProfileSchema = new Schema({
-    studentId: {
+    name: {
         type: String,
-        unique: true,
-        match: /^[A-Za-z0-9-]+$/,
+        require: false
     },
     email: {
         type: String,
+        require: false,
         unique: true,
         lowercase: true
     },
-    firstName: {
+    password: {
         type: String,
-        required: true,
-        trim: true
+        require: false
     },
-    secondName: {
+    role: {
         type: String,
-        trim: true
+        require: false,
+        enum: ['admin', 'user', 'manager'],
+        default: "user"
     },
     profilePicture: {
         type: String,
+        require: false,
         default: './uploads/profile_pics/default.jpg'
-    },
-    gender: {
-        type: String,
-        enum: ["Male", "Female", "Other"],
-        required: true
     },
     qualification: {
         type: String,
-        required: true
+        require: false
     },
     dateOfBirth: {
         type: Date,
-        required: true
+        require: false
     },
     phoneNumber: {
         type: String,
+        require: false,
         default: null
     },
     updatedAt: {
         type: Date,
+        require: false,
         default: Date.now
     }
 });
